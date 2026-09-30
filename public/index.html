@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Telegram Verifikatsiyali Neon Test Tizimi</title>
+    <style>
+        body { font-family: sans-serif; background-color: #0d1117; color: #c9d1d9; padding: 20px; display: flex; justify-content: center; }
+        .container { max-width: 600px; width: 100%; background: #161b22; padding: 30px; border-radius: 10px; border: 1px solid #30363d; box-shadow: 0 4px 15px rgba(0,230,118, 0.2); }
+        h1 { color: #00e676; text-align: center; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #30363d; background: #0d1117; color: #fff; box-sizing: border-box; margin-bottom: 15px; font-size: 16px; }
+        .question-card { background: #21262d; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #00e676; }
+        .options label { display: block; background: #30363d; padding: 10px; margin: 5px 0; border-radius: 5px; cursor: pointer; }
+        .options label:hover { background: #444c56; }
+        button { width: 100%; background: #00e676; color: #0d1117; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 10px; }
+        .hidden { display: none; }
+        #status { text-align: center; font-weight: bold; margin: 10px 0; color: #ff6b6b; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Neon Database Quiz</h1>
+    
+    <!-- 1-BOSQICH: VERIFIKATSIYA BLOKI -->
+    <div id="auth-block">
+        <p style="text-align:center; color:#8b949e;">Avval Telegram botimizga kirib <b>/start</b> bosing va ID raqamingizni oling.</p>
+        <input type="text" id="fullName" placeholder="Sertifikat uchun to'liq ismingiz...">
+        <input type="number" id="telegramId" placeholder="Telegram ID raqamingiz...">
+        <button onclick="sendCode()">Telegramga Kod Yuborish</button>
+        
+        <div id="code-input-block" class="hidden">
+            <input type="text" id="verifyCode" placeholder="Telegram bot yuborgan 4 xonali kod...">
+            <button style="background:#58a6ff; color:#fff;" onclick="verifyCode()">Kodni Tasdiqlash va Testni Boshlash</button>
+        </div>
+    </div>
+
+    <!-- 2-BOSQICH: TEST BLOKI -->
+    <div id="quiz-block" class="hidden">
+        <div id="quiz-container"></div>
+        <button onclick="submitQuiz()">Testni Yakunlash va Sertifikat Olish</button>
+    </div>
+
+    <div id="status"></div>
+</div>
+
+<script>
+    let questionsData = [];
+    let savedTelegramId = '';
+    let savedFullName = '';
+
+    const statusDiv = document.getElementById('status');
+
+    async function sendCode() {
+        const fullName = document.getElementById('fullName').value.trim();
+        const telegramId = document.getElementById('telegramId').value.trim();
+        
+        if(!fullName || !telegramId) return alert("Barcha maydonlarni to'ldiring!");
+        
+        savedFullName = fullName;
+        savedTelegramId = telegramId;
+        statusDiv.style.color = '#58a6ff';
+        statusDiv.innerText = "Kod yuborilmoqda...";
+
+        const res = await fetch('/api/send-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegramId })
+        });
+        const data = await res.json();
+
+        if(data.success) {
+            statusDiv.style.color = '#00e676';
+            statusDiv.innerText = data.message;
+            document.getElementById('code-input-block').classList.remove('hidden');
+        } else {
+            statusDiv.style.color = '#ff6b6b';
+            statusDiv.innerText = data.error;
+        }
+    }
+
+    async function verifyCode() {
+        const code = document.getElementById('verifyCode').value.trim();
+        if(!code) return alert("Kodni kiriting!");
+
+        const res = await fetch('/api/verify-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegramId: savedTelegramId, code })
+        });
+        const data = await res.json();
+
+        if(data.success) {
+            statusDiv.innerText = "";
+            document.getElementById('auth-block').classList.add('hidden');
+            document.getElementById('quiz-block').classList.remove('hidden');
+            
+            questionsData = data.questions;
+            
+            // MAP INTEGRATSIYASI TO'LIQ TUZATILDI
+            let quizHTML = '';
+            questionsData.forEach((q, idx) => {
+                quizHTML += `
+                    <div class="question-card">
+                        <p><strong>${idx + 1}. ${q.question}</strong></p>
+                        <div class="options">
+                `;
+                
+                q.options.forEach((opt, oIdx) => {
+                    quizHTML += `
+                        <label>
+                            <input type="radio" name="question_${q.id}" value="${oIdx}"> ${opt}
+                        </label>
+                    `;
+                });
+                
+                quizHTML += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('quiz-container').innerHTML = quizHTML;
+        } else {
+            statusDiv.style.color = '#ff6b6b';
+            statusDiv.innerText = data.error;
+        }
+    }
+
+    async function submitQuiz() {
+        const answers = {};
+        questionsData.forEach(q => {
+            const checked = document.querySelector(`input[name="question_${q.id}"]:checked`);
+            if(checked) answers[q.id] = checked.value;
+        });
+
+        if(Object.keys(answers).length < questionsData.length) return alert("Hamma savollarni belgilang!");
+
+        statusDiv.style.color = '#00e676';
+        statusDiv.innerText = "Tekshirilmoqda...";
+
+        const response = await fetch('/api/submit-quiz', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fullName: savedFullName, telegramId: savedTelegramId, answers })
+        });
+
+        if (response.headers.get('Content-Type') === 'application/pdf') {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `Sertifikat_${savedFullName}.pdf`; a.click();
+            statusDiv.innerText = "Tabriklaymiz! Sertifikatingiz yuklab olindi va Telegram botingizga bildirishnoma yuborildi 🎉";
+        } else {
+            const data = await response.json();
+            statusDiv.style.color = '#ff6b6b';
+            statusDiv.innerText = data.message;
+        }
+    }
+</script>
+</body>
+</html>

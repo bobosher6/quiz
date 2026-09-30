@@ -1,0 +1,17 @@
+{
+  "name": "neon-quiz-cert",
+  "version": "1.0.0",
+  "description": "Neon.tech database quiz and certificate generator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "node-telegram-bot-api": "^0.66.0",
+    "nodemailer": "^10.0.13",
+    "pdfkit": "^0.15.0",
+    "pg": "^8.11.5"
+  }
+}
