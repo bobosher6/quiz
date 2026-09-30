@@ -144,7 +144,7 @@ app.post('/api/submit-quiz', async (req, res) => {
     if (percent >= 60) {
       // 📝 1. UNIKAL SERTIFIKAT RAQAMINI GENERATSIYA QILISH
       const joriyYil = new Date().getFullYear();
-      const tasodifiyRaqam = Math.floor(1000 + Math.random() * 9000);
+      const tasodifiyRaqam = Math.floor(1000 + Math.random() * 900000000000);
       const sertifikatRaqami = `DBX-SRD-${joriyYil}-${tasodifiyRaqam}`;
 
       // 📝 2. ERTIFIKAT RAQAMINI FOYDALANUVChI NATIJASI BILAN BIRGA BAZAGA YOZISh
@@ -171,7 +171,7 @@ app.post('/api/submit-quiz', async (req, res) => {
 
       // ⭐ Rasmiy logotipni internetdan xavfsiz yuklab olib joylashtirish
       try {
-        const logoUrl = "https://customs.uz";
+        const logoUrl = "https://www.customs.uz/img/gtk_image.png";
         const response = await axios.get(logoUrl, { responseType: 'arraybuffer' });
         const imageBuffer = Buffer.from(response.data, 'binary');
         doc.image(imageBuffer, doc.page.width / 2 - 35, 45, { width: 70 });
