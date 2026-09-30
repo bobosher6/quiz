@@ -2,18 +2,150 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
+    <!-- 📱 Mobil qurilmalar ekraniga moslashish uchun eng muhim teg -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telegram Verifikatsiyali Neon Test Tizimi</title>
     <style>
-        body { font-family: sans-serif; background-color: #0d1117; color: #c9d1d9; padding: 20px; display: flex; justify-content: center; }
-        .container { max-width: 600px; width: 100%; background: #161b22; padding: 30px; border-radius: 10px; border: 1px solid #30363d; box-shadow: 0 4px 15px rgba(0,230,118, 0.2); }
-        h1 { color: #00e676; text-align: center; }
-        input[type="text"], input[type="number"] { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #30363d; background: #0d1117; color: #fff; box-sizing: border-box; margin-bottom: 15px; font-size: 16px; }
-        .question-card { background: #21262d; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #00e676; }
-        .options label { display: block; background: #30363d; padding: 10px; margin: 5px 0; border-radius: 5px; cursor: pointer; }
-        .options label:hover { background: #444c56; }
-        button { width: 100%; background: #00e676; color: #0d1117; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 10px; }
+        /* 📜 Umumiy Sozlamalar */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: #0d1117; 
+            color: #c9d1d9; 
+            padding: 15px; 
+            margin: 0;
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* 📦 Asosiy Konteyner (Moslashuvchan) */
+        .container { 
+            max-width: 600px; 
+            width: 100%; 
+            background: #161b22; 
+            padding: 25px; 
+            border-radius: 12px; 
+            border: 1px solid #30363d; 
+            box-shadow: 0 4px 20px rgba(0, 230, 118, 0.15); 
+            box-sizing: border-box;
+        }
+
+        h1 { 
+            color: #00e676; 
+            text-align: center; 
+            font-size: 24px;
+            margin-top: 0;
+        }
+
+        /* ⌨️ Kiritish maydonlari */
+        input[type="text"], input[type="number"] { 
+            width: 100%; 
+            padding: 14px; 
+            border-radius: 8px; 
+            border: 1px solid #30363d; 
+            background: #0d1117; 
+            color: #fff; 
+            box-sizing: border-box; 
+            margin-bottom: 15px; 
+            font-size: 16px; /* ⚠️ Mobilda klaviatura ochilganda ekran kattalashib ketmasligi uchun 16px shart */
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: #00e676;
+            outline: none;
+        }
+
+        /* 📝 Savollar Kartochkasi */
+        .question-card { 
+            background: #21262d; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin-bottom: 20px; 
+            border-left: 5px solid #00e676; 
+        }
+
+        .question-card p {
+            margin-top: 0;
+            font-size: 17px;
+            line-height: 1.4;
+        }
+
+        /* 🔘 Variantlar (Sensorli ekranlar uchun katta va qulay) */
+        .options label { 
+            display: flex;
+            align-items: center;
+            background: #30363d; 
+            padding: 14px; 
+            margin: 8px 0; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            user-select: none;
+            transition: background 0.2s;
+            font-size: 15px;
+        }
+
+        .options label:hover { 
+            background: #444c56; 
+        }
+
+        .options input[type="radio"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            accent-color: #00e676; /* Radio tugmachani neon rangga bo'yash */
+        }
+
+        /* 🚀 Tugmalar */
+        button { 
+            width: 100%; 
+            background: #00e676; 
+            color: #0d1117; 
+            border: none; 
+            padding: 15px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            margin-bottom: 10px; 
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #00c853;
+        }
+
         .hidden { display: none; }
-        #status { text-align: center; font-weight: bold; margin: 10px 0; color: #ff6b6b; }
+        
+        #status { 
+            text-align: center; 
+            font-weight: bold; 
+            margin: 15px 0 0 0; 
+            color: #ff6b6b; 
+            font-size: 15px;
+        }
+
+        /* 📱 Ekran o'lchamiga qarab moslashish (Media Queries) */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+            .question-card {
+                padding: 15px;
+            }
+            .options label {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -22,7 +154,7 @@
     
     <!-- 1-BOSQICH: VERIFIKATSIYA BLOKI -->
     <div id="auth-block">
-        <p style="text-align:center; color:#8b949e;">Avval Telegram botimizga kirib <b>/start</b> bosing va ID raqamingizni oling.</p>
+        <p style="text-align:center; color:#8b949e; font-size: 14px; line-height: 1.4;">Avval Telegram botimizga kirib <b>/start</b> bosing va ID raqamingizni oling.</p>
         <input type="text" id="fullName" placeholder="Sertifikat uchun to'liq ismingiz...">
         <input type="number" id="telegramId" placeholder="Telegram ID raqamingiz...">
         <button onclick="sendCode()">Telegramga Kod Yuborish</button>
@@ -95,7 +227,6 @@
             
             questionsData = data.questions;
             
-            // MAP INTEGRATSIYASI TO'LIQ TUZATILDI
             let quizHTML = '';
             questionsData.forEach((q, idx) => {
                 quizHTML += `
